@@ -59,9 +59,7 @@ def filter_file_by_unicode_range(dataset):
             elif is_in_allowed_ranges(char):
                 filtered_line += char
             else:
-                filtered_line = ""
                 rejected.add(char)
-                break
 
         filtered_line = " ".join(filtered_line.split())
 
@@ -77,9 +75,8 @@ def filter_file_by_unicode_range(dataset):
 
 def split_to_words(dataset):
     new_dataset = []
-    print()
     for i in range(0, len(dataset)):
-        i = tuple(dataset[i].split())
+        i = dataset[i].split()
         new_dataset += i
 
     new_dataset = list(set(new_dataset))
@@ -87,14 +84,16 @@ def split_to_words(dataset):
 
 
 # Example usage
-input_file = "Dataset/data/prompts.txt"
-output_file = "Dataset/data/wordprompts.txt"
+input_file = "trOCR/Dataset/raw_data/sentence-level/preprompts.txt"
+output_file = "trOCR/Dataset/raw_data/word-level/wordprompts2.txt"
 
 with open(input_file, "r", encoding="utf-8") as f:
     dataset = f.readlines()
 
 dataset = filter_file_by_unicode_range(dataset)
+print(len(dataset))
 dataset = split_to_words(dataset)
+print(len(dataset))
 
 with open(output_file, "w", encoding="utf-8") as f:
     for i in dataset:

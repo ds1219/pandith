@@ -116,23 +116,22 @@ def split_words(img):
 
 
 def preprocess(img):
+    img = remove_shadows(img)
+    img = binarize_image(img)
+    img = cv2.bitwise_not(img)
+    show_cv2_image(img)
+
+    
     img = de_noise_image(img)
     show_cv2_image(img)
-    img = remove_shadows(img)
-    show_cv2_image(img)
-    img = remove_page_lines(img)
-    show_cv2_image(img)
-    img = binarize_image(img)
-    show_cv2_image(img)
-    img = cv2.resize(img, (int(500 * img.shape[1] / img.shape[0]), 500))
-    img = cv2.bitwise_not(img)
+    
     show_cv2_image(img)
     img = split_words(img)
     return img
 
 
 img = cv2.imread(
-    "C:/Users/Dulan/Documents/Github/pandithaya/Dataset/data/train-real/test/22-7.jpg"
+    "/home/dulan/Downloads/20250208_163255.jpg"
 )
 
 
