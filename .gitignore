@@ -1,15 +1,1 @@
-env/
-out/
-**/__pycache__/
-Dataset/test/
-Dataset/train/
-Dataset/test.txt
-Dataset/train.txt
-Dataset/Synthetic_Data/
-Dataset/Synthetic_Data_2/
-Dataset/Real_Small/
-Dataset/train-real/
-Dataset/raw_data/sentence-level/preprompts.txt
-Dataset/Real Small.zip
-Dataset/syntheic_word_small.zip
-Dataset/Synthetic_Data_2.zip
+*.zip
