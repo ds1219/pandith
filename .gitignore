@@ -13,3 +13,10 @@ Dataset/raw_data/sentence-level/preprompts.txt
 Dataset/Real Small.zip
 Dataset/syntheic_word_small.zip
 Dataset/Synthetic_Data_2.zip
+Dataset/real/processed/
+Dataset/real/preprocessed
+Dataset/real/test
+Dataset/real/train
+Dataset/real/test_augmented
+Dataset/real/train_augmented
+*.tsv

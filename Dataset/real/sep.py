@@ -3,8 +3,8 @@ import shutil
 import pandas as pd
 
 # Define file and folder names
-tsv_file = 'labels.tsv'       # Your original TSV file (with header "ile\tlabels")
-source_folder = 'processed'   # Folder containing the original images
+tsv_file = 'Dataset/real/labels.tsv'       # Your original TSV file (with header "ile\tlabels")
+source_folder = 'Dataset/real/preprocessed'   # Folder containing the original images
 train_folder = 'train'
 test_folder = 'test'
 

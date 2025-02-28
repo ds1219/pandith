@@ -9,26 +9,10 @@ num_augmentations = 25  # Number of augmented copies per image
 
 # Function to apply random enhancements to an image
 def apply_random_enhancements(image):
-    # Randomly adjust brightness
-    enhancer = ImageEnhance.Brightness(image)
-    factor = random.uniform(0.5, 1.5)  # Random brightness factor
-    image = enhancer.enhance(factor)
-
-    # Randomly adjust contrast
-    enhancer = ImageEnhance.Contrast(image)
-    factor = random.uniform(0.5, 1.5)  # Random contrast factor
-    image = enhancer.enhance(factor)
-
-    # Randomly adjust color balance
-    enhancer = ImageEnhance.Color(image)
-    factor = random.uniform(0.5, 1.5)  # Random color balance factor
-    image = enhancer.enhance(factor)
-
-    # Randomly adjust sharpness
-    enhancer = ImageEnhance.Sharpness(image)
-    factor = random.uniform(0.5, 1.5)  # Random sharpness factor
-    image = enhancer.enhance(factor)
-
+    # Randomly adjust rotation make sure to adjust the image size
+    rotation = random.randint(-10, 10)
+    image = image.rotate(rotation, expand=True)
+    
     return image
 
 # Function to augment images in a given folder
@@ -36,8 +20,8 @@ def augment_images(folder_name):
     # Paths for original and augmented data
     original_folder = os.path.join(base_dir, folder_name)
     augmented_folder = os.path.join(base_dir, f"{folder_name}_augmented")
-    original_tsv = os.path.join(original_folder, f"{folder_name}_labels.tsv")
-    augmented_tsv = os.path.join(augmented_folder, f"{folder_name}_labels_augmented.tsv")
+    original_tsv = os.path.join(f"{folder_name}_labels.tsv")
+    augmented_tsv = os.path.join(augmented_folder, f"_labels_augmented.tsv")
 
     # Create augmented folder if it doesn't exist
     os.makedirs(augmented_folder, exist_ok=True)
@@ -83,5 +67,5 @@ def augment_images(folder_name):
     print(f"Data augmentation completed for {folder_name}. Augmented images and updated label file have been created.")
 
 # Augment images in both train and test folders
-augment_images('train')
-augment_images('test')
+augment_images('Dataset/real/test')
+augment_images('Dataset/real/train')
