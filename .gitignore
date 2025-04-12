@@ -1,4 +1,4 @@
-env/
+venv/
 out/
 **/__pycache__/
 Dataset/test/
@@ -20,3 +20,11 @@ Dataset/real/train
 Dataset/real/test_augmented
 Dataset/real/train_augmented
 *.tsv
+Dataset/real/split
+Dataset/real/real
+Dataset/real/unprocessed
+Dataset/archive (1)/
+Dataset/real/augmented
+Dataset/synthetic-handwritten/letters/
+output/
+Dataset/scripts/synthetic handwritten data generator/letters
