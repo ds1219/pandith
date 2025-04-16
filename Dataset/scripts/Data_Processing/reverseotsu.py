@@ -4,8 +4,8 @@ import cv2
 import glob
 import os
 
-path = "Dataset/archive (1)/train"
-save_path = "Dataset/archive (1)/train-inverted"
+path = "output/synthetic-handwritten"
+save_path = "output/synthetic-handwritten-reverseotsu"
 
 for filename in glob.glob(os.path.join(path, "*.jpg")):
     print(filename)

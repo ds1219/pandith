@@ -5,7 +5,7 @@ import random
 from PIL import Image
 import os
 import pandas as pd
-from flashtext import KeywordProcessor
+from tqdm import tqdm
 
 
 def read_json_file(file_path):
@@ -18,10 +18,8 @@ def read_json_file(file_path):
             data = {item: index + 1 for index, item in enumerate(data["letters"])}
             return data
     except FileNotFoundError:
-        print(f"Error: File '{file_path}' not found")
         return None
     except json.JSONDecodeError:
-        print(f"Error: Invalid JSON format in '{file_path}'")
         return None
 
 
@@ -44,7 +42,7 @@ def read_image_segments():
 
 
 def greedy_tokenize(s, token_dict):
-    need_to_split = {"ේ": "ේ", "ො": "ො", "ෝ": "ො◌්", "ෞ": "ෞ"}
+    need_to_split = {"ේ": "ේ", "ො": "ො", "ෝ": "ො◌්", "ෞ": "ෞ", "◌": ""}
     for key, value in need_to_split.items():
         s = s.replace(key, value)
 
@@ -70,7 +68,6 @@ def greedy_tokenize(s, token_dict):
 def convert_word_to_segments(input_str):
     # Extract token values
     token_values = greedy_tokenize(input_str, letters)
-    print(token_values)
     return token_values
 
 
@@ -94,32 +91,28 @@ def concat_images(images):
     return composite
 
 
-def is_before_character(segment_num):
-    """Check if the segment number corresponds to a character that should go before."""
-    # Add the segment numbers that represent "before" characters
-    before_segments = [2, 3, 4, 5, 6, 7]  # Adjust these numbers based on your mapping
-    return segment_num in before_segments
-
-
 def convert_segments_to_image(segments):
-    images = []
+    """Generate a composite image from segment numbers"""
     before_images = []
     after_images = []
 
-    # First, separate the segments into before and after images
-    for i, segment in enumerate(segments):
-        img_name = random.choice(image_segments[str(segment)])
-        img_path = f"Dataset/scripts/synthetic handwritten data generator/letters/{segment}/{img_name}.jpg"
+    # Separate segments into before and after images
+    for segment in segments:
+        segment_str = str(segment)
+        if segment_str not in image_segments:
+            continue
+
+        img_name = random.choice(image_segments[segment_str])
+        img_path = f"Dataset/scripts/synthetic handwritten data generator/letters/{segment_str}/{img_name}.jpg"
         img = Image.open(img_path).convert("RGB")
 
-        if is_before_character(segment):
+        if segment in [2, 3, 4, 5, 6, 7]:  # Before characters
             before_images.append(img)
         else:
             after_images.append(img)
 
-    # Combine the lists with before images first
-    images = before_images + after_images
-    return concat_images(images)
+    # Combine before and after images
+    return concat_images(before_images + after_images)
 
 
 def read_words_from_file(file_path):
@@ -128,7 +121,6 @@ def read_words_from_file(file_path):
         with open(file_path, "r", encoding="utf-8") as file:
             return [line.strip() for line in file if line.strip()]
     except FileNotFoundError:
-        print(f"Error: Words file '{file_path}' not found")
         return []
 
 
@@ -136,7 +128,36 @@ def save_labels_to_tsv(labels_data, output_path):
     """Save image filenames and their labels to a TSV file."""
     df = pd.DataFrame(labels_data, columns=["file", "labels"])
     df.to_csv(output_path, sep="\t", index=False)
-    print(f"Labels saved to: {output_path}")
+
+
+def process_words(words, output_dir):
+    """Process a list of words and generate handwritten images"""
+    labels_data = []
+    rejected_words = []  # List to track rejected words
+
+    for idx, word in tqdm(enumerate(words), total=len(words), desc="Processing words"):
+        try:
+            segments = convert_word_to_segments(word)
+            image = convert_segments_to_image(segments)
+
+            if image:
+                # Use index as filename
+                filename = f"{idx}.jpg"
+                output_path = os.path.join(output_dir, filename)
+                image.save(output_path)
+
+                # Add to labels data
+                labels_data.append({"file": filename, "labels": word})
+        except Exception:
+            rejected_words.append(word)  # Add to rejected words list
+
+    # Save rejected words to file
+    if rejected_words:
+        rejected_path = os.path.join(output_dir, "rejected.txt")
+        with open(rejected_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(rejected_words))
+
+    return labels_data
 
 
 if __name__ == "__main__":
@@ -151,29 +172,10 @@ if __name__ == "__main__":
     os.makedirs(output_dir, exist_ok=True)
 
     # Read words from file
-    words = read_words_from_file("Dataset/raw_data/word-level/test-real.txt")
+    words = read_words_from_file("Dataset/raw_data/word-level/real.txt")
 
-    # List to store filename and label pairs
-    labels_data = []
-
-    print("Generating images...")
-    for word in words:
-        result = convert_word_to_segments(word)
-        if result is None:
-            print(f"Skipping '{word}': contains undefined characters")
-            continue
-
-        # Generate and save image
-        image = convert_segments_to_image(result)
-        if image:
-            filename = f"{word}.jpg"
-            output_path = os.path.join(output_dir, filename)
-            image.save(output_path)
-            print(f"Generated image for '{word}': {output_path}")
-            print(f"Segments: {result}")
-
-            # Add to labels data
-            labels_data.append({"file": filename, "labels": word})
+    # Process words and generate images
+    labels_data = process_words(words, output_dir)
 
     # Save labels to TSV file
     tsv_path = os.path.join(output_dir, "test.tsv")
