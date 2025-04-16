@@ -5,7 +5,7 @@ import random
 from PIL import Image
 import os
 import pandas as pd
-from tqdm import tqdm
+from flashtext import KeywordProcessor
 
 
 def read_json_file(file_path):
@@ -26,15 +26,15 @@ def read_json_file(file_path):
 
 
 def read_image_segments():
-    glob_path = "Dataset/synthetic-handwritten/letters/*/*.jpg"
+    glob_path = "Dataset/scripts/synthetic handwritten data generator/letters/*/*.jpg"
     files = glob(glob_path, recursive=True)
 
     segments_dict = {}
     for file_path in files:
         # Get file name without extension
-        file_name = file_path.split("\\")[-1].split(".")[0]
+        file_name = file_path.split("/")[-1].split(".")[0]
         # Get the last folder name
-        folder_name = file_path.split("\\")[-2]
+        folder_name = file_path.split("/")[-2]
 
         if folder_name not in segments_dict:
             segments_dict[folder_name] = []
@@ -43,41 +43,35 @@ def read_image_segments():
     return segments_dict
 
 
-def validate_word(word):
-    """Check if all characters in word can be mapped to defined letters."""
+def greedy_tokenize(s, token_dict):
+    need_to_split = {"ේ": "ේ", "ො": "ො", "ෝ": "ො◌්", "ෞ": "ෞ"}
+    for key, value in need_to_split.items():
+        s = s.replace(key, value)
+
+    for i in range(0, len(s)):
+        if s[i] == "ෙ" or s[i] == "ෛ":
+            s = s.replace(f"{s[i-1]}{s[i]}", f"{s[i]}{s[i-1]}")
+    tokens = []
     i = 0
-    while i < len(word):
-        found = False
-        for length in range(min(4, len(word) - i), 0, -1):
-            if word[i : i + length] in letters:
-                i += length
-                found = True
+    while i < len(s):
+        match = None
+        for j in range(len(s), i, -1):
+            if s[i:j] in token_dict:
+                match = s[i:j]
                 break
-        if not found:
-            return False
-    return True
+        if match:
+            tokens.append(token_dict[match])
+            i += len(match)
+        else:
+            raise ValueError(f"Unrecognized token at index {i}: {s[i]}")
+    return tokens
 
 
-def convert_word_to_segments(word):
-    if not validate_word(word):
-        return None
-
-    segments = []
-    i = 0
-    while i < len(word):
-        found = False
-        # Try longest possible matches first
-        for length in range(min(4, len(word) - i), 0, -1):
-            substr = word[i : i + length]
-            if substr in letters:
-                segments.append(letters[substr])
-                i += length
-                found = True
-                break
-
-        if not found:
-            i += 1
-    return segments
+def convert_word_to_segments(input_str):
+    # Extract token values
+    token_values = greedy_tokenize(input_str, letters)
+    print(token_values)
+    return token_values
 
 
 def concat_images(images):
@@ -115,7 +109,7 @@ def convert_segments_to_image(segments):
     # First, separate the segments into before and after images
     for i, segment in enumerate(segments):
         img_name = random.choice(image_segments[str(segment)])
-        img_path = f"Dataset/synthetic-handwritten/letters/{segment}/{img_name}.jpg"
+        img_path = f"Dataset/scripts/synthetic handwritten data generator/letters/{segment}/{img_name}.jpg"
         img = Image.open(img_path).convert("RGB")
 
         if is_before_character(segment):
@@ -146,7 +140,10 @@ def save_labels_to_tsv(labels_data, output_path):
 
 
 if __name__ == "__main__":
-    letters = read_json_file("Dataset/synthetic-handwritten/letters.json")
+    letters = read_json_file(
+        "Dataset/scripts/synthetic handwritten data generator/letters.json"
+    )
+
     image_segments = read_image_segments()
 
     # Create output directory if it doesn't exist
@@ -159,7 +156,8 @@ if __name__ == "__main__":
     # List to store filename and label pairs
     labels_data = []
 
-    for word in tqdm(words, desc="Generating images", unit="word"):
+    print("Generating images...")
+    for word in words:
         result = convert_word_to_segments(word)
         if result is None:
             print(f"Skipping '{word}': contains undefined characters")
