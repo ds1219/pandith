@@ -4,9 +4,9 @@ import pandas as pd
 
 # Define file and folder names
 tsv_file = (
-    "Dataset/real/labels.tsv"  # Your original TSV file (with header "ile\tlabels")
+    "C:\pandith\output\synthetic-handwritten\\test.tsv"  # Your original TSV file (with header "ile\tlabels")
 )
-source_folder = "Dataset/real/images"  # Folder containing the original images
+source_folder = "output\synthetic-handwritten"  # Folder containing the original images
 train_folder = "train"
 test_folder = "test"
 

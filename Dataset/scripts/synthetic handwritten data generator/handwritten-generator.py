@@ -6,6 +6,7 @@ from PIL import Image
 import os
 import pandas as pd
 from tqdm import tqdm
+import re
 
 
 def read_json_file(file_path):
@@ -24,20 +25,50 @@ def read_json_file(file_path):
 
 
 def read_image_segments():
-    glob_path = "Dataset/scripts/synthetic handwritten data generator/letters/*/*.jpg"
+    # Use os.path.join for cross-platform path construction
+    # and glob to find files within any subfolder of 'letters'
+    glob_path = os.path.join("Dataset", "scripts", "synthetic handwritten data generator", "letters", "*", "*.jpg")
     files = glob(glob_path, recursive=True)
 
     segments_dict = {}
+    print(f"Searching for images with glob pattern: {glob_path}")
+    print(f"Found {len(files)} image files.")
+
+    if not files:
+        print("Warning: No JPG files found matching the glob pattern. Please check your 'Dataset/scripts/synthetic handwritten data generator/letters' directory.")
+        return {} # Return an empty dictionary if no files are found
+
     for file_path in files:
-        # Get file name without extension
-        file_name = file_path.split("/")[-1].split(".")[0]
-        # Get the last folder name
-        folder_name = file_path.split("/")[-2]
+        # Use os.path.split and os.path.basename for robust path parsing
+        # file_path example: Dataset\scripts\synthetic handwritten data generator\letters\97\72vld.jpg
+        
+        # Get the filename with extension (e.g., '72vld.jpg')
+        full_filename = os.path.basename(file_path) 
+        # Get the filename without extension (e.g., '72vld')
+        file_name_without_ext = os.path.splitext(full_filename)[0]
+
+        # Get the directory containing the file (e.g., 'Dataset\...\letters\97')
+        parent_dir = os.path.dirname(file_path)
+        # Get the name of the immediate parent folder (e.g., '97')
+        folder_name = os.path.basename(parent_dir)
+
+        # Debug prints to see what values are being extracted
+        # print(f"Processing: {file_path}")
+        # print(f"  Extracted folder_name: '{folder_name}'")
+        # print(f"  Extracted file_name (without ext): '{file_name_without_ext}'")
+
+        # Ensure folder_name is not empty or malformed before using it as a key
+        if not folder_name:
+            print(f"Warning: Could not extract a valid folder name from path: {file_path}. Skipping.")
+            continue # Skip this file if folder_name is empty
 
         if folder_name not in segments_dict:
             segments_dict[folder_name] = []
-        segments_dict[folder_name].append(file_name)
+        
+        # Append the filename without extension
+        segments_dict[folder_name].append(file_name_without_ext)
 
+    print(f"Successfully populated segments_dict with {len(segments_dict)} unique folders.")
     return segments_dict
 
 
@@ -139,14 +170,12 @@ def process_words(words, output_dir):
         try:
             segments = convert_word_to_segments(word)
             image = convert_segments_to_image(segments)
+            #print(f"{segments} - {image}")
 
             if image:
-                # Use index as filename
                 filename = f"{idx}.jpg"
                 output_path = os.path.join(output_dir, filename)
                 image.save(output_path)
-
-                # Add to labels data
                 labels_data.append({"file": filename, "labels": word})
         except Exception:
             rejected_words.append(word)  # Add to rejected words list
