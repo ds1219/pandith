@@ -4,8 +4,8 @@ import cv2
 import glob
 import os
 
-path = "output/synthetic-handwritten"
-save_path = "output/synthetic-handwritten-reverseotsu"
+path = "synth-hw\\train"
+save_path = "output\\train"
 
 for filename in glob.glob(os.path.join(path, "*.jpg")):
     print(filename)

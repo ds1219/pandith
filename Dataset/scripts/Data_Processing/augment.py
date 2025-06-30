@@ -11,7 +11,7 @@ import colorsys
 
 # Define file paths and parameters
 base_dir = "."  # Base directory containing train and test folders
-num_augmentations = 50  # Number of augmented copies per image
+num_augmentations = 1  # Number of augmented copies per image
 
 
 def to_apply():
@@ -137,7 +137,7 @@ def augment_images(folder_name):
                     augmented_img.save(new_image_path)
 
                     # Append the new entry to the list
-                    new_entries.append({"ile": new_image_name, "labels": label})
+                    new_entries.append({"file": new_image_name, "labels": label})
                     pbar.update(1)
 
     # Create a DataFrame for the new entries
@@ -155,5 +155,5 @@ def augment_images(folder_name):
 
 
 # Augment images in both train and test folders
-augment_images("Dataset/real/split/test")
-augment_images("Dataset/real/split/train")
+augment_images("C:\\Users\\Dulan\\Code\\pandith\\synth-hw\\test")
+augment_images("C:\\Users\\Dulan\\Code\\pandith\\synth-hw\\train")
