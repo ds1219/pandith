@@ -29,3 +29,9 @@ Dataset/real/augmented
 Dataset/synthetic-handwritten/letters/
 output/
 Dataset/scripts/synthetic handwritten data generator/letters/
+synth-handwritten-augmented
+model/
+real/
+real_aug/
+synth-hw-dlora/
+synth-pre-augmented/
