@@ -14,8 +14,6 @@ def read_json_file(file_path):
         with open(file_path, "r", encoding="utf-8") as file:
             data = json.load(file)
             data.get("letters", [])
-            # convert array to dictionary with element as key and index as value shifted by 1
-            # to make it 1 based index
             data = {item: index + 1 for index, item in enumerate(data["letters"])}
             return data
     except FileNotFoundError:
@@ -25,9 +23,14 @@ def read_json_file(file_path):
 
 
 def read_image_segments():
-    # Use os.path.join for cross-platform path construction
-    # and glob to find files within any subfolder of 'letters'
-    glob_path = os.path.join("Dataset", "scripts", "synthetic handwritten data generator", "letters", "*", "*.jpg")
+    glob_path = os.path.join(
+        "Dataset",
+        "scripts",
+        "synthetic handwritten data generator",
+        "letters",
+        "*",
+        "*.jpg",
+    )
     files = glob(glob_path, recursive=True)
 
     segments_dict = {}
@@ -35,40 +38,31 @@ def read_image_segments():
     print(f"Found {len(files)} image files.")
 
     if not files:
-        print("Warning: No JPG files found matching the glob pattern. Please check your 'Dataset/scripts/synthetic handwritten data generator/letters' directory.")
-        return {} # Return an empty dictionary if no files are found
-
+        print(
+            "Warning: No JPG files found matching the glob pattern. Please check your 'Dataset/scripts/synthetic handwritten data generator/letters' directory."
+        )
+        return {}
     for file_path in files:
-        # Use os.path.split and os.path.basename for robust path parsing
-        # file_path example: Dataset\scripts\synthetic handwritten data generator\letters\97\72vld.jpg
-        
-        # Get the filename with extension (e.g., '72vld.jpg')
-        full_filename = os.path.basename(file_path) 
-        # Get the filename without extension (e.g., '72vld')
+
+        full_filename = os.path.basename(file_path)
         file_name_without_ext = os.path.splitext(full_filename)[0]
 
-        # Get the directory containing the file (e.g., 'Dataset\...\letters\97')
         parent_dir = os.path.dirname(file_path)
-        # Get the name of the immediate parent folder (e.g., '97')
         folder_name = os.path.basename(parent_dir)
-
-        # Debug prints to see what values are being extracted
-        # print(f"Processing: {file_path}")
-        # print(f"  Extracted folder_name: '{folder_name}'")
-        # print(f"  Extracted file_name (without ext): '{file_name_without_ext}'")
-
-        # Ensure folder_name is not empty or malformed before using it as a key
         if not folder_name:
-            print(f"Warning: Could not extract a valid folder name from path: {file_path}. Skipping.")
-            continue # Skip this file if folder_name is empty
+            print(
+                f"Warning: Could not extract a valid folder name from path: {file_path}. Skipping."
+            )
+            continue
 
         if folder_name not in segments_dict:
             segments_dict[folder_name] = []
-        
-        # Append the filename without extension
+
         segments_dict[folder_name].append(file_name_without_ext)
 
-    print(f"Successfully populated segments_dict with {len(segments_dict)} unique folders.")
+    print(
+        f"Successfully populated segments_dict with {len(segments_dict)} unique folders."
+    )
     return segments_dict
 
 
@@ -97,7 +91,6 @@ def greedy_tokenize(s, token_dict):
 
 
 def convert_word_to_segments(input_str):
-    # Extract token values
     token_values = greedy_tokenize(input_str, letters)
     return token_values
 
@@ -107,16 +100,13 @@ def concat_images(images):
     if not images:
         return None
 
-    # Add up all the widths
     width = sum(image.width for image in images)
-    # Get the highest height
     height = max(image.height for image in images)
 
     composite = Image.new("RGB", (width, height))
-    # Paste each image to the right of the previous one, centered vertically
     x = 0
     for image in images:
-        y = (height - image.height) // 2  # Calculate vertical center position
+        y = (height - image.height) // 2
         composite.paste(image, (x, y))
         x += image.width
     return composite
@@ -127,7 +117,6 @@ def convert_segments_to_image(segments):
     before_images = []
     after_images = []
 
-    # Separate segments into before and after images
     for segment in segments:
         segment_str = str(segment)
         if segment_str not in image_segments:
@@ -137,12 +126,11 @@ def convert_segments_to_image(segments):
         img_path = f"Dataset/scripts/synthetic handwritten data generator/letters/{segment_str}/{img_name}.jpg"
         img = Image.open(img_path).convert("RGB")
 
-        if segment in [2, 3, 4, 5, 6, 7]:  # Before characters
+        if segment in [2, 3, 4, 5, 6, 7]:
             before_images.append(img)
         else:
             after_images.append(img)
 
-    # Combine before and after images
     return concat_images(before_images + after_images)
 
 
@@ -164,13 +152,13 @@ def save_labels_to_tsv(labels_data, output_path):
 def process_words(words, output_dir):
     """Process a list of words and generate handwritten images"""
     labels_data = []
-    rejected_words = []  # List to track rejected words
+    rejected_words = []
 
     for idx, word in tqdm(enumerate(words), total=len(words), desc="Processing words"):
         try:
             segments = convert_word_to_segments(word)
             image = convert_segments_to_image(segments)
-            #print(f"{segments} - {image}")
+            # print(f"{segments} - {image}")
 
             if image:
                 filename = f"{idx}.jpg"
@@ -178,9 +166,8 @@ def process_words(words, output_dir):
                 image.save(output_path)
                 labels_data.append({"file": filename, "labels": word})
         except Exception:
-            rejected_words.append(word)  # Add to rejected words list
+            rejected_words.append(word)
 
-    # Save rejected words to file
     if rejected_words:
         rejected_path = os.path.join(output_dir, "rejected.txt")
         with open(rejected_path, "w", encoding="utf-8") as f:
@@ -196,16 +183,12 @@ if __name__ == "__main__":
 
     image_segments = read_image_segments()
 
-    # Create output directory if it doesn't exist
     output_dir = "output/synthetic-handwritten"
     os.makedirs(output_dir, exist_ok=True)
 
-    # Read words from file
     words = read_words_from_file("Dataset/raw_data/word-level/real.txt")
 
-    # Process words and generate images
     labels_data = process_words(words, output_dir)
 
-    # Save labels to TSV file
     tsv_path = os.path.join(output_dir, "test.tsv")
     save_labels_to_tsv(labels_data, tsv_path)

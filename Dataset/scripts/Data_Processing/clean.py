@@ -12,37 +12,37 @@ from time import sleep
 def is_in_allowed_ranges(char):
 
     return (
-        ("\u0D80" <= char <= "\u0DFF")
+        ("\u0d80" <= char <= "\u0dff")
         or ("\u0020" == char)
-        or ("\u200D" == char)
-        or ("\u0DCF" == char)
-        or ("\u00A0" == char)
-        or ("\uFEFF" == char)
-        or ("\u001F" == char)
-        or ("\u000A" == char)
+        or ("\u200d" == char)
+        or ("\u0dcf" == char)
+        or ("\u00a0" == char)
+        or ("\ufeff" == char)
+        or ("\u001f" == char)
+        or ("\u000a" == char)
         or ("\u0009" == char)
-        or ("\u00AD" == char)
-        or ("\uFE0F" == char)
+        or ("\u00ad" == char)
+        or ("\ufe0f" == char)
     )
 
 
 def is_punctuation(char):
 
     return (
-        (("\u2000" <= char <= "\u206F") and char != "\u200D")
+        (("\u2000" <= char <= "\u206f") and char != "\u200d")
         or ("\u2010" <= char <= "\u2027")
-        or ("\u2030" <= char <= "\u205E")
-        or ("\u0021" <= char <= "\u002F")
-        or ("\u005B" <= char <= "\u005F")
-        or ("\u007B" <= char <= "\u007E")
-        or ("\u003A" <= char <= "\u003F")
-        or ("\u00A1" <= char <= "\u00BF")
+        or ("\u2030" <= char <= "\u205e")
+        or ("\u0021" <= char <= "\u002f")
+        or ("\u005b" <= char <= "\u005f")
+        or ("\u007b" <= char <= "\u007e")
+        or ("\u003a" <= char <= "\u003f")
+        or ("\u00a1" <= char <= "\u00bf")
         or ("🔴" == char)
         or ("❗" == char)
         or ("⬆" == char)
         or ("`" == char)
-        or ("\u02DD" == char)
-        or ("\u25CF" == char)
+        or ("\u02dd" == char)
+        or ("\u25cf" == char)
     )
 
 
@@ -83,7 +83,6 @@ def split_to_words(dataset):
     return new_dataset
 
 
-# Example usage
 input_file = "trOCR/Dataset/raw_data/sentence-level/preprompts.txt"
 output_file = "trOCR/Dataset/raw_data/word-level/wordprompts2.txt"
 

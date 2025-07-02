@@ -9,12 +9,8 @@ def show_cv2_image(image):
 
 
 def otsu_threshold(img):
-    # Convert to grayscale
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    # Apply Gaussian blur
     img = cv2.GaussianBlur(img, (5, 5), 0)
-
-    # ostu threshold
     _, ostu = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     return ostu
 
