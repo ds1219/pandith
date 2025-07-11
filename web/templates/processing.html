@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Processing</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='upload.css') }}" />
+  </head>
+  <body>
+    <div class="card" style="padding: 2rem; text-align: center; max-width: 28rem;">
+      <h1 class="page-title">Processing Your File</h1>
+      <div style="margin-bottom: 2rem;">
+        <p style="color: var(--text-light);">
+          Your file <span style="font-weight: 600; color: var(--purple-lighter);">{{ filename }}</span> is being processed
+        </p>
+      </div>
+      
+      <div style="display: flex; justify-content: center; margin-bottom: 2rem;">
+        <div class="progress-container">
+          <div class="progress-bg"></div>
+          
+          <svg class="w-full h-full relative z-10" viewBox="0 0 100 100" style="width: 100%; height: 100%; position: relative; z-index: 10;">
+            <circle style="color: rgb(55, 65, 81); stroke: currentColor;" stroke-width="8" cx="50" cy="50" r="40" fill="transparent"></circle>
+            
+            <circle class="progress-ring-circle glow" stroke-width="8" cx="50" cy="50" r="40" fill="transparent"></circle>
+          </svg>
+          
+          <div class="processing-text text-fade">
+            <span>Processing</span><span id="processing-dots"></span>
+          </div>
+        </div>
+      </div>
+      
+      <p class="status-message" id="wait-message">Please wait while we process your file...</p>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const taskId = "{{ task_id }}";
+        const processingTextContainer = document.querySelector(".processing-text span:first-child");
+        const waitMessage = document.getElementById("wait-message");
+        const progressRing = document.querySelector(".progress-ring-circle");
+        
+        const checkStatus = setInterval(function () {
+          fetch("/task_status/" + taskId)
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.status === "complete") {
+                clearInterval(checkStatus);
+                
+                progressRing.style.animation = "none";
+                progressRing.style.strokeDasharray = "252";
+                progressRing.style.strokeDashoffset = "0";
+                progressRing.style.stroke = "var(--green)";
+                
+                processingTextContainer.textContent = "Done!";
+                document.getElementById("processing-dots").style.display = "none";
+                waitMessage.innerText = "Redirecting to results...";
+                
+                setTimeout(function() {
+                  window.location.href = "/output?task_id=" + taskId + "&filename={{ filename }}";
+                }, 1500);
+              } else if (data.status === "error") {
+                clearInterval(checkStatus);
+                
+                progressRing.style.animation = "none";
+                progressRing.style.stroke = "var(--red)";
+                progressRing.style.strokeDasharray = "252";
+                progressRing.style.strokeDashoffset = "126"; // half circle
+                
+                processingTextContainer.textContent = "Error";
+                document.getElementById("processing-dots").style.display = "none";
+                waitMessage.innerText = data.result || "An error occurred";
+              }
+            })
+            .catch((error) => {
+              console.error("Error checking status:", error);
+            });
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>

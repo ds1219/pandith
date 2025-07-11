@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Python Function Output</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='upload.css') }}"
+    />
+  </head>
+  <body>
+    <div class="result-card">
+      <div style="text-align: center; margin-bottom: 1.5rem">
+        <svg
+          class="result-icon"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          ></path>
+        </svg>
+      </div>
+      <h1 class="page-title">Processing Complete</h1>
+      <div class="result-box">
+        <h2 class="result-label">Result:</h2>
+        <p class="result-text">{{ result }}</p>
+      </div>
+      <a href="{{ url_for('index') }}" class="back-button">
+        Process Another Image
+      </a>
+    </div>
+  </body>
+</html>
